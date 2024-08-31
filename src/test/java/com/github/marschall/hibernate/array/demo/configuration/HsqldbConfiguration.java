@@ -16,7 +16,8 @@ public class HsqldbConfiguration {
     EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder()
             .generateUniqueName(true)
             .setType(HSQL)
-            .addScript("sql/hsqldb/01_tables.sql");
+            .addScript("sql/hsqldb/01_tables.sql")
+            .addScript("sql/hsqldb/02_data.sql");
     return DataSourceUtils.wrapWithLogging(builder.build(), "hsqldb-test");
   }
 

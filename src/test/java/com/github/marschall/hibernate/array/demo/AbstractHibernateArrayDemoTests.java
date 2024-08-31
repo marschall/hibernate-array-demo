@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.sql.DataSource;
+
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
@@ -16,55 +18,66 @@ import org.hibernate.cfg.Configuration;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import jakarta.persistence.SharedCacheMode;
 
-class HibernateArrayDemoTests {
-
+@SpringJUnitConfig
+abstract class AbstractHibernateArrayDemoTests {
+  
   private SessionFactory sessionFactory;
+
+  @Autowired
+  private DataSource dataSource;
 
   @BeforeEach
   void setUp() throws IOException {
     this.initializeSessionFactory();
   }
-  
+
   @AfterEach
   void tearDown() {
     this.closeSessionFactory();
   }
 
   void initializeSessionFactory() {
-    sessionFactory =
-        new Configuration()
+    Configuration builder = new Configuration()
             // entities
-            // H2 Sakila
-            .setProperty(AvailableSettings.JAKARTA_JDBC_URL, "jdbc:h2:mem:sakila;INIT=RUNSCRIPT FROM 'src/test/resources/sakila.sql'")
-            // Credentials
-            .setProperty(AvailableSettings.JAKARTA_JDBC_USER, "sa")
-            .setProperty(AvailableSettings.JAKARTA_JDBC_PASSWORD, "sa")
-            .setProperty(AvailableSettings.STATEMENT_FETCH_SIZE, 10)
+            .addAnnotatedClass(Currency.class)
             .setProperty("hibernate.type.java_time_use_direct_jdbc", true)
-            .setProperty(AvailableSettings.SHOW_SQL, true)
             .setSharedCacheMode(SharedCacheMode.NONE)
-            .setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy())
-            .buildSessionFactory();
+            .setPhysicalNamingStrategy(new CamelCaseToUnderscoresNamingStrategy());
+    builder.getProperties().put(AvailableSettings.JAKARTA_NON_JTA_DATASOURCE, this.dataSource);
+    sessionFactory =builder.buildSessionFactory();
   }
-  
+
   void closeSessionFactory() {
     this.sessionFactory.close();
   }
-  
+
   @Test
   void arrayFunctions() {
     this.sessionFactory.inStatelessSession(session -> {
       Transaction transaction = session.beginTransaction();
       try {
-        List<Integer> codes = Arrays.asList(392, 756, 826, 840, 978);
+        List<Integer> numbers = Arrays.asList(392, 756, 826, 840, 978);
         List<Currency> currencies = session.createQuery(
                 "FROM Currency "
-                + "WHERE array_contains(:codes, code)",
-                  Currency.class)
-                .setParameter("codes", codes.toArray(Integer[]::new))
+                        + "WHERE array_contains(:numbers, number)",
+                        Currency.class)
+                .setParameter("numbers", numbers.toArray(Integer[]::new))
+                .getResultList();
+        assertNotNull(currencies);
+        assertFalse(currencies.isEmpty());
+        assertEquals(5, currencies.size());
+        
+        List<String> codes = Arrays.asList("JPY", "CHF", "GBP", "USD", "EUR");
+        currencies = session.createQuery(
+                "FROM Currency "
+                        + "WHERE array_contains(:codes, code)",
+                        Currency.class)
+                .setParameter("codes", codes.toArray(String[]::new))
                 .getResultList();
         assertNotNull(currencies);
         assertFalse(currencies.isEmpty());
@@ -75,5 +88,5 @@ class HibernateArrayDemoTests {
       }
     });
   }
-  
+
 }

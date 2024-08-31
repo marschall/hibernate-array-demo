@@ -1,12 +1,15 @@
 package com.github.marschall.hibernate.array.demo;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 @Entity
 public class Currency {
 
+  @Id
   private String code;
 
+  @Id
   private Integer number;
 
   public String getCode() {
@@ -23,6 +26,29 @@ public class Currency {
 
   public void setNumber(Integer number) {
     this.number = number;
+  }
+
+  @Override
+  public int hashCode() {
+    return code.hashCode() * 31 + number.hashCode();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (!(obj instanceof Currency)) {
+      return false;
+    }
+    Currency other = (Currency) obj;
+    return this.number.equals(other.number)
+            && this.code.equals(other.code);
+  }
+
+  @Override
+  public String toString() {
+    return '[' + this.code + '(' + this.number + ")]";
   }
 
 }

@@ -16,7 +16,8 @@ public class H2Configuration {
     EmbeddedDatabaseBuilder builder = new EmbeddedDatabaseBuilder()
             .generateUniqueName(true)
             .setType(H2)
-            .addScript("sql/h2/01_tables.sql");
+            .addScript("sql/h2/01_tables.sql")
+            .addScript("sql/h2/02_data.sql");
     return DataSourceUtils.wrapWithLogging(builder.build(), "h2-test");
   }
 
