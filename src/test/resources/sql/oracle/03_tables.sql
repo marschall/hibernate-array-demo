@@ -3,7 +3,7 @@ ALTER SESSION SET CONTAINER = FREEPDB1;
 ALTER SESSION SET CURRENT_SCHEMA = jdbc;
 
 CREATE TABLE currency (
-  number NUMBER(3)   NOT NULL,
-  code   VARCHAR2(3) NOT NULL,
-  CONSTRAINT pk_currency PRIMARY KEY(number, code)
+  num  NUMBER(3)   NOT NULL,
+  code VARCHAR2(3) NOT NULL,
+  CONSTRAINT pk_currency PRIMARY KEY(num, code)
 );

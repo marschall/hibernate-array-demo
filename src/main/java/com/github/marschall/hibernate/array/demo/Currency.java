@@ -1,5 +1,6 @@
 package com.github.marschall.hibernate.array.demo;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
@@ -7,9 +8,11 @@ import jakarta.persistence.Id;
 public class Currency {
 
   @Id
+  @Column(nullable = false, updatable = false)
   private String code;
 
   @Id
+  @Column(name = "num", nullable = false, updatable = false)
   private Integer number;
 
   public String getCode() {

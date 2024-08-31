@@ -2,7 +2,7 @@
 ALTER SESSION SET CONTAINER = FREEPDB1;
 ALTER SESSION SET CURRENT_SCHEMA = jdbc;
 
-INSERT INTO currency(number, code) VALUES
+INSERT INTO currency(num, code) VALUES
 (4, 'AFA'),
 (8, 'ALL'),
 (12, 'DZD'),

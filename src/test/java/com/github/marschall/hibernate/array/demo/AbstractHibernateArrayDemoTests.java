@@ -10,11 +10,11 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.hibernate.SessionFactory;
+import org.hibernate.StatelessSession;
 import org.hibernate.Transaction;
 import org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy;
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.cfg.Configuration;
-import org.hibernate.query.criteria.HibernateCriteriaBuilder;
 import org.hibernate.query.criteria.JpaCriteriaQuery;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,11 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import jakarta.persistence.SharedCacheMode;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Path;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 
 @SpringJUnitConfig
@@ -68,17 +64,14 @@ abstract class AbstractHibernateArrayDemoTests {
     this.sessionFactory.inStatelessSession(session -> {
       Transaction transaction = session.beginTransaction();
       try {
-        List<Currency> currencies = null;
         List<Integer> numbers = Arrays.asList(392, 756, 826, 840, 978);
-//        List<Currency> currencies = session.createQuery(
-//                "FROM Currency "
-//                        + "WHERE array_contains(:numbers, number)",
-//                        Currency.class)
-//                .setParameter("numbers", numbers.toArray(Integer[]::new))
-//                .getResultList();
-//        assertNotNull(currencies);
-//        assertFalse(currencies.isEmpty());
-//        assertEquals(5, currencies.size());
+        List<Currency> currencies = session.createQuery(
+                "FROM Currency "
+                        + "WHERE array_contains(:numbers, number)",
+                        Currency.class)
+                .setParameter("numbers", numbers.toArray(Integer[]::new))
+                .getResultList();
+        assertCurrencies(currencies);
 
         List<String> codes = Arrays.asList("JPY", "CHF", "GBP", "USD", "EUR");
         currencies = session.createQuery(
@@ -87,9 +80,7 @@ abstract class AbstractHibernateArrayDemoTests {
                         Currency.class)
                 .setParameter("codes", codes.toArray(String[]::new))
                 .getResultList();
-        assertNotNull(currencies);
-        assertFalse(currencies.isEmpty());
-        assertEquals(5, currencies.size());
+        assertCurrencies(currencies);
 
       } finally {
         transaction.rollback();
@@ -102,33 +93,40 @@ abstract class AbstractHibernateArrayDemoTests {
     this.sessionFactory.inStatelessSession(session -> {
       Transaction transaction = session.beginTransaction();
       try {
-        List<Currency> currencies = null;
         List<Integer> numbers = Arrays.asList(392, 756, 826, 840, 978);
 
-        CriteriaQuery<Currency> query = session.getCriteriaBuilder().createQuery(Currency.class);
+        CriteriaQuery<Currency> query = createCurrencyQuery(session);
         Root<Currency> root = query.from(Currency.class);
 
-//        List<Currency> currencies = session.createQuery(
-//                query.where(
-//                        root.get(Currency_.number).in(numbers.toArray())))
-//                .getResultList();
-//        assertNotNull(currencies);
-//        assertFalse(currencies.isEmpty());
-//        assertEquals(5, currencies.size());
+        List<Currency> currencies = session.createQuery(
+                query.where(
+                        root.get(Currency_.number).in(numbers.toArray())))
+                .getResultList();
+        assertCurrencies(currencies);
 
         List<String> codes = Arrays.asList("JPY", "CHF", "GBP", "USD", "EUR");
+        query = createCurrencyQuery(session);
+        root = query.from(Currency.class);
         currencies = session.createQuery(
                 query.where(
                         root.get(Currency_.code).in(codes.toArray())))
                 .getResultList();
-        assertNotNull(currencies);
-        assertFalse(currencies.isEmpty());
-        assertEquals(5, currencies.size());
+        assertCurrencies(currencies);
 
       } finally {
         transaction.rollback();
       }
     });
+  }
+
+  private static JpaCriteriaQuery<Currency> createCurrencyQuery(StatelessSession session) {
+    return session.getCriteriaBuilder().createQuery(Currency.class);
+  }
+
+  private static void assertCurrencies(List<Currency> currencies) {
+    assertNotNull(currencies);
+    assertFalse(currencies.isEmpty());
+    assertEquals(5, currencies.size());
   }
 
 }
