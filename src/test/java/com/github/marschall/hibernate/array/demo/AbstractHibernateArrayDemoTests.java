@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.sql.DataSource;
@@ -64,20 +63,20 @@ abstract class AbstractHibernateArrayDemoTests {
     this.sessionFactory.inStatelessSession(session -> {
       Transaction transaction = session.beginTransaction();
       try {
-        List<Integer> numbers = Arrays.asList(392, 756, 826, 840, 978);
-        List<Currency> currencies = session.createQuery(
-                "FROM Currency "
-                        + "WHERE array_contains(:numbers, number)",
-                        Currency.class)
+        List<Integer> numbers = List.of(392, 756, 826, 840, 978);
+        List<Currency> currencies = session.createQuery("""
+                FROM Currency
+                WHERE array_contains(:numbers, number)
+                """, Currency.class)
                 .setParameter("numbers", numbers.toArray(Integer[]::new))
                 .getResultList();
         assertCurrencies(currencies);
 
-        List<String> codes = Arrays.asList("JPY", "CHF", "GBP", "USD", "EUR");
-        currencies = session.createQuery(
-                "FROM Currency "
-                        + "WHERE array_contains(:codes, code)",
-                        Currency.class)
+        List<String> codes = List.of("JPY", "CHF", "GBP", "USD", "EUR");
+        currencies = session.createQuery("""
+                FROM Currency
+                WHERE array_contains(:codes, code)
+                """, Currency.class)
                 .setParameter("codes", codes.toArray(String[]::new))
                 .getResultList();
         assertCurrencies(currencies);
@@ -93,7 +92,7 @@ abstract class AbstractHibernateArrayDemoTests {
     this.sessionFactory.inStatelessSession(session -> {
       Transaction transaction = session.beginTransaction();
       try {
-        List<Integer> numbers = Arrays.asList(392, 756, 826, 840, 978);
+        List<Integer> numbers = List.of(392, 756, 826, 840, 978);
 
         CriteriaQuery<Currency> query = createCurrencyQuery(session);
         Root<Currency> root = query.from(Currency.class);
@@ -104,7 +103,7 @@ abstract class AbstractHibernateArrayDemoTests {
                 .getResultList();
         assertCurrencies(currencies);
 
-        List<String> codes = Arrays.asList("JPY", "CHF", "GBP", "USD", "EUR");
+        List<String> codes = List.of("JPY", "CHF", "GBP", "USD", "EUR");
         query = createCurrencyQuery(session);
         root = query.from(Currency.class);
         currencies = session.createQuery(
