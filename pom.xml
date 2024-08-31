@@ -8,7 +8,7 @@
   <inceptionYear>2022</inceptionYear>
   <url>https://github.com/marschall/hibernate-array-demo</url>
   <name>Hibernate Array Demo</name>
-  <description>Demof for binding arrays in Hibernate</description>
+  <description>Demo for binding arrays in Hibernate</description>
 
   <developers>
     <developer>
